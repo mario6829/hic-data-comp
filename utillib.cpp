@@ -107,8 +107,8 @@ string FindEOSPath(ActivityDB::activityLong actlong, const THicType hicType)
 
   FixActName(actlong, hicType);
 
-  string eosPathSingle = GetEOSPath(actlong, hicType, false);
-  string eosPathDouble = GetEOSPath(actlong, hicType, true);
+  string eosPathSingle = GetEosPath(actlong, hicType, false);
+  string eosPathDouble = GetEosPath(actlong, hicType, true);
 
   string eosPath = "";
   struct stat eosStat;
@@ -174,58 +174,6 @@ void FixActName(ActivityDB::activityLong &actlong, const THicType hicType)
 
     actlong.Name.insert(namePos, "OBHIC-");
   }
-}
-
-string GetEOSPath(ActivityDB::activityLong actlong, const THicType hicType, const Bool_t doubleComp)
-{
-//
-// Wrapper to DBHelpers::GetEosPath in order to handle IB staves
-// (in which case most of the code is copied from there)
-//
-// Inputs:
-//          actlong   : the activityLong for which the path has to be found
-//          hicType   : the HIC type (IB or OB)
-//          doubleComp: if true, double the site name
-//
-// Outputs:
-//
-// Return:
-//          the EOS path as a string
-//
-// Created:      26 Apr 2019  Mario Sitta
-
-  if (actlong.Name.find("IBSTAVE") == string::npos)
-    return GetEosPath(actlong, hicType, doubleComp);
-
-  // From here on: copied more or less literally from GetEosPath
-  string path, location, test, component;
-  string basePath("/eos/project/a/alice-its/HicTests");
-
-  GetServiceAccount(actlong.Location.Name, location);
-  test = GetTestDirName(GetTestType(actlong.Type.Name));
-
-  size_t pos;
-  if (hicType == HIC_IB) {
-    pos = actlong.Name.find("IBSTAVE");
-  }
-  else {
-    cout << "OB Stave not yet implemented!" << endl;
-    return "";
-  }
-
-  if (pos == string::npos) {
-    std::cout << "Unable to deduce component name (actvity name was "
-              << actlong.Name << std::endl;
-    return "";
-  }
-  else
-    component = actlong.Name.substr(pos);
-
-  replace(component.begin(), component.end(), ' ', '_');
-
-  path = basePath + "/" + test + location + "/" + component;
-  if (doubleComp) path += "/" + component;
-  return path;
 }
 
 TFile* OpenRootFile(TString name, Bool_t recreate)

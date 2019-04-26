@@ -17,7 +17,6 @@ char* logfilename;
 const char* menuEntries[NUMENTRIES+1] = {
   "Read data for single IB HIC",
   "Read data for single OB HIC",
-  "Read data for single IB Stave",
   "Read data for all IB HICs",
   "Read data for all OB HICs",
   "Help",
@@ -342,7 +341,6 @@ void readMenuEntry(void)
 //
 // Created:      25 Oct 2018  Mario Sitta
 // Updated:      26 Feb 2019  Mario Sitta
-// Updated:      25 Apr 2019  Mario Sitta  Single IB Stave added
 //
 
   int c;
@@ -398,32 +396,28 @@ void readMenuEntry(void)
       {
         case 1:
 	  analyzeSingleIBHic();
-	  c = 7; // Exit
+	  c = 6; // Exit
 	  break;
         case 2:
 	  analyzeSingleOBHic();
-	  c = 7; // Exit
+	  c = 6; // Exit
 	  break;
         case 3:
-	  analyzeSingleIBStave();
-	  c = 7; // Exit
+	  analyzeAllIBHics();
+	  c = 6; // Exit
 	  break;
         case 4:
-	  analyzeAllIBHics();
-	  c = 7; // Exit
+	  analyzeAllOBHics();
+	  c = 6; // Exit
 	  break;
         case 5:
-	  analyzeAllOBHics();
-	  c = 7; // Exit
-	  break;
-        case 6:
 	  helpUsage();
 	  createMainMenu(0);
 	  break;
-        case 7:
+        case 6:
 	  break;
       }
-  } while (c != 7);
+  } while (c != 6);
 #endif
 }
   
@@ -549,16 +543,14 @@ void setMenuFunctions(void)
 // Return:
 //
 // Created:      19 Sep 2018  Mario Sitta
-// Updated:      25 Apr 2019  Mario Sitta  Single IB Stave added
 //
 
   set_item_userptr(my_items[0], (void*)analyzeSingleIBHic);
   set_item_userptr(my_items[1], (void*)analyzeSingleOBHic);
-  set_item_userptr(my_items[2], (void*)analyzeSingleIBStave);
-  set_item_userptr(my_items[3], (void*)analyzeAllIBHics);
-  set_item_userptr(my_items[4], (void*)analyzeAllOBHics);
-  set_item_userptr(my_items[5], (void*)helpUsage);
-  set_item_userptr(my_items[6], (void*)exitFromMenu);
+  set_item_userptr(my_items[2], (void*)analyzeAllIBHics);
+  set_item_userptr(my_items[3], (void*)analyzeAllOBHics);
+  set_item_userptr(my_items[4], (void*)helpUsage);
+  set_item_userptr(my_items[5], (void*)exitFromMenu);
 
 }
 #endif

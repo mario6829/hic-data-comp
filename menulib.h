@@ -13,7 +13,7 @@
 
 #define ARRAY_SIZE(a) (sizeof(a) / sizeof(a[0]))
 
-#define NUMENTRIES 7
+#define NUMENTRIES 6
 
 void clearMenu(void);
 void createMainMenu(const bool color=false);
