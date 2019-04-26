@@ -16,7 +16,7 @@
 #define NUMENTRIES 7
 
 void clearMenu(void);
-void createMainMenu(bool color=false);
+void createMainMenu(const bool color=false);
 void createLogFileName(char* progname);
 void exitFromMenu(void);
 void f12ToExit(void);
@@ -26,6 +26,7 @@ void redirectStderr(void);
 void redirectStdout(void);
 void restoreStderr(void);
 void restoreStdout(void);
+void setVersionNumber(const int version, const int subversion);
 #ifdef USENCURSES
 void clearScreen(WINDOW* win, const int ywin);
 WINDOW* getMenuWindow(void);

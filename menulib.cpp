@@ -7,6 +7,8 @@ MENU *my_menu;
 #endif
 int menuSize;
 
+string versubver;
+
 fpos_t posStdout, posStderr;
 int fdStdout, fdStderr;
 
@@ -35,6 +37,7 @@ void createLogFileName(char* progname)
 // Return:
 //
 // Created:      20 Sep 2018  Mario Sitta
+// Updated:      26 Apr 2019  Mario Sitta  Print version number
 //
 
   const int pgname_len = strlen(progname);
@@ -52,9 +55,12 @@ void createLogFileName(char* progname)
           timst.tm_year-100, timst.tm_mon+1, timst.tm_mday,
           timst.tm_hour, timst.tm_min, timst.tm_sec);
 
+  FILE* logfile = fopen(logfilename, "a");
+  fprintf(logfile, "dataComp Version %s\n", versubver.c_str());
+  fclose(logfile);
 }
 
-void createMainMenu(bool color)
+void createMainMenu(const bool color)
 {
 //
 // Creates the initial menu
@@ -69,6 +75,7 @@ void createMainMenu(bool color)
 //
 // Created:      19 Sep 2018  Mario Sitta
 // Updated:      25 Oct 2018  Mario Sitta  Add plain menu
+// Updated:      26 Apr 2019  Mario Sitta  Print version number
 //
 #ifdef USENCURSES
   MENU *my_menu;
@@ -118,6 +125,7 @@ void createMainMenu(bool color)
   int j;
   printf("\n\n\n\n\n\n\n");
   printf("\t\t\tHIC Data Analysis\n");
+  printf("\t\t\t    Version %s\n\n", versubver.c_str());
   for (j=0; j<NUMENTRIES; j++)
     printf("\t\t%2d - %s\n",j+1,menuEntries[j]);
 #endif
@@ -390,23 +398,23 @@ void readMenuEntry(void)
       {
         case 1:
 	  analyzeSingleIBHic();
-	  c = 6; // Exit
+	  c = 7; // Exit
 	  break;
         case 2:
 	  analyzeSingleOBHic();
-	  c = 6; // Exit
+	  c = 7; // Exit
 	  break;
         case 3:
 	  analyzeSingleIBStave();
-	  c = 6; // Exit
+	  c = 7; // Exit
 	  break;
         case 4:
 	  analyzeAllIBHics();
-	  c = 6; // Exit
+	  c = 7; // Exit
 	  break;
         case 5:
 	  analyzeAllOBHics();
-	  c = 6; // Exit
+	  c = 7; // Exit
 	  break;
         case 6:
 	  helpUsage();
@@ -415,7 +423,7 @@ void readMenuEntry(void)
         case 7:
 	  break;
       }
-  } while (c != 6);
+  } while (c != 7);
 #endif
 }
   
@@ -554,3 +562,23 @@ void setMenuFunctions(void)
 
 }
 #endif
+
+void setVersionNumber(const int version, const int subversion)
+{
+//
+// Saves the version number into a (global) string
+//
+// Inputs:
+//            version    : the version number
+//            subversion : the subversion number
+//
+// Outputs:
+//
+// Return:
+//
+// Created:      26 Apr 2019  Mario Sitta
+//
+
+  versubver = to_string(version) + "." + to_string(subversion);
+
+}

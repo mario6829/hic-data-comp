@@ -65,6 +65,8 @@ int main(int argc, char** argv)
     exit(0);
   }
 
+  setVersionNumber(kVersion, kSubVersion);
+
   createLogFileName(argv[0]);
   redirectStderr();
 
