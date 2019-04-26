@@ -40,6 +40,7 @@ Bool_t CheckRootFileExists(TString name);
 void CloseRootFile(TFile *rootfile);
 string FindEOSPath(ActivityDB::activityLong actlong, const THicType hicType);
 void FixActName(ActivityDB::activityLong &actlong, const THicType hicType);
+string GetEOSPath(ActivityDB::activityLong actlong, const THicType hicType, const Bool_t doubleComp);
 TFile* OpenRootFile(TString name, Bool_t recreate=kFALSE);
 Bool_t RenameExistingRootFile(TString oldname, TString mod, TString &newname);
 TFile* SetupRootFile(TString name, Bool_t &redo);

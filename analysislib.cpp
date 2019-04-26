@@ -193,6 +193,32 @@ void analyzeSingleIBHic(void)
 }
 
 #ifdef USENCURSES
+void analyzeSingleIBStave(WINDOW* win)
+#else
+void analyzeSingleIBStave(void)
+#endif
+{
+//
+// Driver routine to analyze a single IB Stave
+//
+// Inputs:
+//           win : the ncurses window
+//
+// Outputs:
+//
+// Return:
+//
+// Created:      25 Apr 2019  Mario Sitta
+//
+
+#ifdef USENCURSES
+  analyzeSingleStave(HIC_IB, win);
+#else
+  analyzeSingleStave(HIC_IB);
+#endif
+}
+
+#ifdef USENCURSES
 void analyzeSingleOBHic(WINDOW* win)
 #else
 void analyzeSingleOBHic(void)
@@ -278,6 +304,149 @@ void analyzeSingleHIC(const THicType hicType)
 #else
   printf("\n\n  HIC %s: componentTypeId %d componentId %d \n",
 	   hicName.data(), componentTypeId, componentId);
+#endif
+
+  // Get the associated activities
+  vector<ComponentDB::compActivity> tests;
+  redirectStdout();
+//  DbGetAllTests (db, componentId, tests, STDigital, false);
+  DbGetAllTests (db, componentId, tests, STDigital, true);
+  restoreStdout();
+
+  std::vector<ComponentDB::compActivity>::iterator it;
+  int nActivity = 0;
+  for(it = tests.begin(); it != tests.end(); it++) {
+    ComponentDB::compActivity act = *it;
+#ifdef USENCURSES
+    mvprintw(5+nActivity, 1, "Activity number %2d : %s\n",
+#else
+    printf(" Activity number %2d : %s\n",
+#endif
+	     nActivity+1, act.Name.data());
+    nActivity++;
+  }
+
+#ifdef USENCURSES
+  mvprintw(5+nActivity+1, 1, "There are a total of %d activities\n", nActivity);
+#else
+  printf("\n There are a total of %d activities\n", nActivity);
+#endif
+
+  // Ask the user which activity to analyze
+  int numAct = chooseActivity(nActivity);
+
+  if (numAct == 0) {
+#ifdef USENCURSES
+    endwin();
+#endif
+    exit(0);
+  }
+
+  // Ask the user which analysis to perform
+  int numAna = chooseAnalysis(nActivity);
+
+  switch (numAna) {
+    case 0:
+    default:  // To refrain gcc from complaining...
+#ifdef USENCURSES
+      endwin();
+#endif
+      exit(0);
+      break;
+    case 1:
+      analyzePowerTest(componentId, tests.at(numAct-1), db, hicType);
+      break;
+    case 2:
+      analyzeDigitalScan(componentId, tests.at(numAct-1), db, hicType);
+      break;
+    case 3:
+      analyzeThresholdScan(componentId, tests.at(numAct-1), db, hicType);
+      break;
+    case 4:
+      analyzeNoiseScan(componentId, tests.at(numAct-1), db, hicType);
+      break;
+    case 5:
+      analyzeDCTRLTest(componentId, tests.at(numAct-1), db, hicType);
+      break;
+  }
+
+#ifdef USENCURSES
+  endwin();
+#endif
+  exit(0);
+}
+
+#ifdef USENCURSES
+void analyzeSingleStave(const THicType hicType, WINDOW* win)
+#else
+void analyzeSingleStave(const THicType hicType)
+#endif
+{
+//
+// Driver routine to analyze a single IB or OB Stave
+//
+// Inputs:
+//           hicType : the HIC type (IB or OB)
+//           win     : the ncurses window
+//
+// Outputs:
+//
+// Return:
+//
+// Created:      25 Apr 2019  Mario Sitta  (similar to analyzeSingleHIC)
+//
+
+#ifdef USENCURSES
+  clearScreen(win, 20);
+#else
+  system("clear");
+  printf("\n");
+#endif
+  std::string staveName = askStaveName();
+
+  // Initialize the DB connection
+  // (no need to check if db is valid: if initAlpideDB fails we exit there)
+  AlpideDB *db = initAlpideDB();
+
+  // Get the component type and Id
+  int componentTypeId;
+  if (hicType == HIC_IB)
+    componentTypeId = DbGetComponentTypeId (db, "IB Stave");
+  else
+//    componentTypeId = DbGetComponentTypeId (db, "Outer Barrel HIC Module");
+  /* !!! TEMPORARY !!! */
+    {
+#ifdef USENCURSES
+      mvprintw(3, 1, "Not yet implemented! \n");
+      f12ToExit();
+      endwin();
+#else
+      printf("\n\n  Not yet implemented! \n");
+      f12ToExit();
+#endif
+      exit(0);
+    }
+
+  int componentId   = DbGetComponentId     (db, componentTypeId, staveName);
+
+  if (componentId == -1) {
+#ifdef USENCURSES
+    mvprintw(3, 1, "HIC %s not found in DataBase! \n", staveName.data());
+    f12ToExit();
+    endwin();
+#else
+    printf("\n\n  HIC %s not found in DataBase! \n", staveName.data());
+    f12ToExit();
+#endif
+    exit(0);
+  }
+    
+#ifdef USENCURSES
+  mvprintw(3, 1, "HIC %s: componentTypeId %d componentId %d \n",
+	   staveName.data(), componentTypeId, componentId);
+#else
+  printf("\n\n  HIC %s: componentTypeId %d componentId %d \n",
+	   staveName.data(), componentTypeId, componentId);
 #endif
 
   // Get the associated activities
