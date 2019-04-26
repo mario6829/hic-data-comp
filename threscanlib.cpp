@@ -316,9 +316,12 @@ void analyzeThresholdScan(const int hicid, const ComponentDB::compActivity act, 
 
   // Open the ROOT file
   string rootFileName;
-  if (hicType == HIC_IB)
-    rootFileName = act.Name.substr(act.Name.find("IBHIC"));
-  else
+  if (hicType == HIC_IB) {
+    if (act.Name.find("IBSTAVE") != string::npos)
+      rootFileName = act.Name.substr(act.Name.find("IBSTAVE"));
+    else
+      rootFileName = act.Name.substr(act.Name.find("IBHIC"));
+  } else
     rootFileName = act.Name.substr(act.Name.find("OBHIC"));
 
   replace(rootFileName.begin(), rootFileName.end(), ' ', '_');
