@@ -1,0 +1,30 @@
+ User options
+==============
+
+   Besides standard options, as reported in the INSTALL file, `configure'
+recognizes the following options to control the specific software:
+
+`--with-libxml2-inc=DIR'
+     Location of libxml2 header files (defaults to /usr/include/libxml2)
+
+`--with-root=DIR'
+     Location of Root installation (defaults to /opt/root)
+
+`--with-alpide-sw=ALPDIR'
+     Location of Alpide software tree
+
+`--with-alpide-sw-inc=DIR'
+     Location of Alipde software include (defaults to ALPDIR/inc)
+
+`--with-alpide-db-inc=DIR'
+     Location of Alipde DB software include (defaults to ALPDIR/DataBaseSrc)
+
+`--with-alpide-pb-inc=DIR'
+     Location of Alipde PowerBoard software include (defaults to ALPDIR/MosaicSrc/libpowerboard/include)
+
+`--with-alpide-libmosaic-inc=DIR'
+     Location of Alipde Mosaic software include (defaults to ALPDIR/MosaicSrc/libmosaic/include)
+
+`--with-alpide-libs=DIR'
+     Location of Alipde software libraries (defaults to ALPDIR/lib)
+
