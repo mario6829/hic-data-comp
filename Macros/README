@@ -1,0 +1,12 @@
+This folder contains some macros that can be used to easily analyze
+the data in a ROOT file.
+
+- chipProfileTemp.C : reads the Root file with data from all modules and
+                      plots some global histograms with the chip temperature
+
+- chipSiteTemp.C : reads the Root file with data from all modules and
+                   plots some histograms with the chip temperature, with
+                   details for each production site
+
+- reg700Plots.C : reads the Root file with data from all modules and
+                  plots some histograms on the status of the 0x700 register
