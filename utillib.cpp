@@ -135,6 +135,7 @@ void FixActName(ActivityDB::activityLong &actlong, const THicType hicType)
 //
 // Created:      10 Oct 2018  Mario Sitta
 // Updated:      26 Feb 2019  Mario Sitta  Check also IB HIC names
+// Updated:      05 May 2019  Mario Sitta  Check other IB HIC names
 //
 
   if (hicType == HIC_IB) {
@@ -146,6 +147,12 @@ void FixActName(ActivityDB::activityLong &actlong, const THicType hicType)
     size_t hicDashPos = actlong.Name.find(hicDash);
     if(hicDashPos != string::npos)
       actlong.Name.replace(hicDashPos,hicDash.length(),"IBHIC");
+
+    // At least in one case it is written "IBIHC"
+    string hicDisl = "IBIHC";
+    size_t hicDislPos = actlong.Name.find(hicDisl);
+    if(hicDislPos != string::npos)
+      actlong.Name.replace(hicDislPos,hicDisl.length(),"IBHIC");
 
   } else { // OB HICs
 
