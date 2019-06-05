@@ -215,7 +215,7 @@ void PlotHistoVsSite(TH2F* histo,
 void PlotAllSites(TH2F* histo,
                   const TString gifName,
                   const Int_t *siteOrder,
-                  const TLegend *siteLegend,
+                  TLegend *siteLegend,
 		  const char *test="Q")
 {
   const Int_t siteColor[numSites] = {2, 4, 6, 8, 1};
@@ -232,8 +232,8 @@ void PlotAllSites(TH2F* histo,
     siteHisto[i]->SetLineColor(siteColor[j-1]);
     siteHisto[i]->SetStats(kFALSE);
     if(i == 0) {
-      siteHisto[i]->SetTitle(histo->GetTitle())
-;      siteHisto[i]->Draw();
+      siteHisto[i]->SetTitle(histo->GetTitle());
+      siteHisto[i]->Draw();
     } else
       siteHisto[i]->Draw("SAME");
     siteLegend->AddEntry(siteHisto[i],Site2Name(j,test).Data());
@@ -457,7 +457,7 @@ void chipSiteTemp(const char *test="Q",
 
   for (Int_t i = 0; i<numSites; i++) {
     TString localNewTitle = newTitle + " - " + Site2Name(i+1,test);
-    TString localGifName = Form("%s_%s",gifName,Site2Name(i+1,test).Data());
+    TString localGifName = Form("%s_%s", gifName.Data(), Site2Name(i+1,test).Data());
 
     tempVsVddaStart[i]->SetTitle(localNewTitle.Data());
     tempVsVddaStart[i]->GetXaxis()->SetTitle("VDDA_{Start} (V)");
@@ -472,7 +472,7 @@ void chipSiteTemp(const char *test="Q",
 
   for (Int_t i = 0; i<numSites; i++) {
     TString localNewTitle = newTitle + " - " + Site2Name(i+1,test);
-    TString localGifName = Form("%s_%s",gifName,Site2Name(i+1,test).Data());
+    TString localGifName = Form("%s_%s", gifName.Data(), Site2Name(i+1,test).Data());
 
     tempVsVddaEnd[i]->SetTitle(localNewTitle.Data());
     tempVsVddaEnd[i]->GetXaxis()->SetTitle("VDDA_{End} (V)");
