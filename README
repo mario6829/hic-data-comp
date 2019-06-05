@@ -1,3 +1,44 @@
+ Pre-requisites
+================
+
+   In order to compile the software you need the XML2 library installed.
+Even if it is not currently used, the `configure' script requires also the
+Ncurses library to be present, since it finds references to it in the
+header files. The packages are usually called `libxml2' and `ncurses',
+consult your OS instructions about their actual name and on how to install
+new system software on your system. 
+   Please pay attention that many OSes split each software library into
+different packages, e.g. one containing only the runtime libraries and
+another one with the header files and the libraries used to link new programs
+against the library. The development packages are the ones needed; usually
+their name ends with "-devel" or "-dev" , again consult your OS instructions
+and/or the list of available packages to determine the correct name.
+
+
+ Installation
+==============
+
+   By default the `configure' script sets /usr/local as installation path:
+this may require the user to be privileged in order to actually install the
+software, using e.g.
+
+sudo make install
+
+   Alternatively a different installation location can be set, where the
+user has write privileges, using the standard `configure' option --prefix
+e.g.
+
+./configure --prefix=/path/to/install
+
+   Use
+
+./configure --help
+
+to print the list of all options, their use and their default values when
+not set. The standard options are reported also in the INSTALL file (which
+is the standard one coming with the `autoconf' package)
+
+
  User options
 ==============
 
