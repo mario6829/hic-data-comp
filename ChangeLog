@@ -1,3 +1,7 @@
+* Thu Jun 06 2019 Mario.Sitta@to.infn.it - 1.1
+- Get rid of activity timestamp from Root file names
+  (EOS paths are fixed in a parallel update in DBHelpers::GetEosPath)
+
 * Fri Apr 26 2019 Mario.Sitta@to.infn.it - 1.0
 - First version with version number
 

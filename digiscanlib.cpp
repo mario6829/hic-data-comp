@@ -291,6 +291,7 @@ void analyzeDigitalScan(const int hicid, const ComponentDB::compActivity act, Al
 // Updated:      27 Sep 2018  Mario Sitta
 // Updated:      26 Feb 2019  Mario Sitta  HIC type added
 // Updated:      08 Mar 2019  Mario Sitta  HIC position & Flag ML/OL staves
+// Updated:      06 Jun 2019  Mario Sitta  Get rid of timestamp from act name
 //
 
   // Should never happen (the caller should have created it for us)
@@ -319,6 +320,11 @@ void analyzeDigitalScan(const int hicid, const ComponentDB::compActivity act, Al
     rootFileName = act.Name.substr(act.Name.find("IBHIC"));
   else
     rootFileName = act.Name.substr(act.Name.find("OBHIC"));
+
+  size_t beginTS = rootFileName.find("[");
+  size_t endTS   = rootFileName.find("]");
+  if (beginTS != string::npos && endTS != string::npos) // Remove the timestamp
+    rootFileName.erase(beginTS - 1); // Till end of string (-1 is for blank space)
 
   replace(rootFileName.begin(), rootFileName.end(), ' ', '_');
   rootFileName += "_DigitalScan.root";

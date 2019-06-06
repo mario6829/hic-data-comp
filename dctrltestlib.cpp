@@ -312,6 +312,7 @@ void analyzeDCTRLTest(const int hicid, const ComponentDB::compActivity act, Alpi
 // Updated:      26 Feb 2019  Mario Sitta  HIC type added
 // Updated:      07 Mar 2019  Mario Sitta  HIC position added
 // Updated:      08 Mar 2019  Mario Sitta  Flag ML/OL staves
+// Updated:      06 Jun 2019  Mario Sitta  Get rid of timestamp from act name
 //
 
   // Should never happen (the caller should have created it for us)
@@ -340,6 +341,11 @@ void analyzeDCTRLTest(const int hicid, const ComponentDB::compActivity act, Alpi
     rootFileName = act.Name.substr(act.Name.find("IBHIC"));
   else
     rootFileName = act.Name.substr(act.Name.find("OBHIC"));
+
+  size_t beginTS = rootFileName.find("[");
+  size_t endTS   = rootFileName.find("]");
+  if (beginTS != string::npos && endTS != string::npos) // Remove the timestamp
+    rootFileName.erase(beginTS - 1); // Till end of string (-1 is for blank space)
 
   replace(rootFileName.begin(), rootFileName.end(), ' ', '_');
   rootFileName += "_DCTRLTest.root";

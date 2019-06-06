@@ -292,6 +292,7 @@ void analyzeThresholdScan(const int hicid, const ComponentDB::compActivity act, 
 // Created:      28 Jan 2019  Mario Sitta
 // Updated:      31 Jan 2019  Mario Sitta
 // Updated:      26 Feb 2019  Mario Sitta  HIC type added
+// Updated:      06 Jun 2019  Mario Sitta  Get rid of timestamp from act name
 //
 
   // Should never happen (the caller should have created it for us)
@@ -320,6 +321,11 @@ void analyzeThresholdScan(const int hicid, const ComponentDB::compActivity act, 
     rootFileName = act.Name.substr(act.Name.find("IBHIC"));
   else
     rootFileName = act.Name.substr(act.Name.find("OBHIC"));
+
+  size_t beginTS = rootFileName.find("[");
+  size_t endTS   = rootFileName.find("]");
+  if (beginTS != string::npos && endTS != string::npos) // Remove the timestamp
+    rootFileName.erase(beginTS - 1); // Till end of string (-1 is for blank space)
 
   replace(rootFileName.begin(), rootFileName.end(), ' ', '_');
   rootFileName += "_ThresholdScan.root";
