@@ -46,8 +46,8 @@ void SanitizeThresScanInput(char *line);
 TTree* SetupHicActListTreeTS(TFile *rootfile);
 TTree* SetupThreScanTree(TString treename, TString treetitle, TFile *rootfile);
 TTree* SetupThreScanTreeResult(TString treename, TString treetitle, TFile *rootfile);
-void ThresholdScanAllChips(TTree *ftree, ActivityDB::activityLong actlong, const int hicid, const int actid, const string eospath, const THicType hicType, bool allScans=true);
-void ThresholdTuneAllChips(TTree *ftree, ActivityDB::activityLong actlong, const int hicid, const int actid, const string eospath, const THicType hicType);
+void ThresholdScanAllChips(TTree *ftree, ActivityDB::activityLong actlong, const int hicid, const int actid, const string eospath, const THicType hicType, std::vector<TChild> children, bool allScans=true);
+void ThresholdTuneAllChips(TTree *ftree, ActivityDB::activityLong actlong, const int hicid, const int actid, const string eospath, const THicType hicType, std::vector<TChild> children);
 void ThresholdScanResults(TTree *ftree, ActivityDB::activityLong actlong, const int hicid, const int actid, const string eospath, const THicType hicType);
 
 

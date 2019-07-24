@@ -44,6 +44,7 @@ void analyzeAllThresholdScans(std::vector<ComponentDB::componentShort> component
 // Created:      29 Jan 2019  Mario Sitta
 // Updated:      31 Jan 2019  Mario Sitta
 // Updated:      26 Feb 2019  Mario Sitta  HIC type added
+// Updated:      05 Jul 2019  Mario Sitta  Chip Wafer and position added
 //
 
   // We need to define here the TTree's for the existing ROOT file
@@ -150,6 +151,12 @@ void analyzeAllThresholdScans(std::vector<ComponentDB::componentShort> component
     ComponentDB::componentShort comp = *iComp;
     DbGetAllTests (db, comp.ID, tests, STThreshold, true);
 
+    // Get the list of chips in this HIC
+    std::vector<TChild> children;
+    int nChildren = DbGetListOfChildren(db, comp.ID, children, true);
+    if (nChildren == 0)
+      printMessage("\nanalyzeThresholdScan","Warning: HIC has no children ", comp.ComponentID.c_str());
+
     // Loop on all activities
     std::vector<ComponentDB::compActivity>::iterator it;
     for(it = tests.begin(); it != tests.end(); it++) {
@@ -224,8 +231,10 @@ void analyzeAllThresholdScans(std::vector<ComponentDB::componentShort> component
       testTunOffset = testuntree->GetEntries();
       testResOffset = resultree->GetEntries();
 
-      ThresholdScanAllChips(testree, actLong, comp.ID, act.ID, eosPath, hicType, false);
-      ThresholdTuneAllChips(testuntree, actLong, comp.ID, act.ID, eosPath, hicType);
+      hicClass = ConvertTestResult(act.Result.Name);
+
+      ThresholdScanAllChips(testree, actLong, comp.ID, act.ID, eosPath, hicType, children, false);
+      ThresholdTuneAllChips(testuntree, actLong, comp.ID, act.ID, eosPath, hicType, children);
       ThresholdScanResults(resultree, actLong, comp.ID, act.ID, eosPath, hicType);
 
       Long64_t prevTestOffset = testree->GetEntries();
@@ -293,6 +302,7 @@ void analyzeThresholdScan(const int hicid, const ComponentDB::compActivity act, 
 // Updated:      31 Jan 2019  Mario Sitta
 // Updated:      26 Feb 2019  Mario Sitta  HIC type added
 // Updated:      06 Jun 2019  Mario Sitta  Get rid of timestamp from act name
+// Updated:      05 Jul 2019  Mario Sitta  Chip Wafer and position added
 //
 
   // Should never happen (the caller should have created it for us)
@@ -359,9 +369,16 @@ void analyzeThresholdScan(const int hicid, const ComponentDB::compActivity act, 
     return;
   }
 
+  // Get the list of chips in this HIC
+  std::vector<TChild> children;
+  int nChildren = DbGetListOfChildren(db, hicid, children, true);
+  if (nChildren == 0)
+    printMessage("\nanalyzeThresholdScan","Warning: HIC has no children");
+
   // Fill the trees for all chips (all scans)
-  ThresholdScanAllChips(threscanTree, actLong, hicid, act.ID, eosPath, hicType);
-  ThresholdTuneAllChips(threstunTree, actLong, hicid, act.ID, eosPath, hicType);
+  hicClass = ConvertTestResult(act.Result.Name);
+  ThresholdScanAllChips(threscanTree, actLong, hicid, act.ID, eosPath, hicType, children);
+  ThresholdTuneAllChips(threstunTree, actLong, hicid, act.ID, eosPath, hicType, children);
   ThresholdScanResults(thresresulTree, actLong, hicid, act.ID, eosPath, hicType);
 
   // Close the ROOT file and exit
@@ -498,6 +515,8 @@ TTree* CreateTreeThresholdScan(TString treeName, TString treeTitle)
 //          a pointer to the created ROOT tree
 //
 // Created:      08 Jan 2019  Mario Sitta
+// Updated:      05 Jul 2019  Mario Sitta  Chip Wafer and position added
+// Updated:      09 Jul 2019  Mario Sitta  HIC class added
 //
 
   TTree *newTree = 0;
@@ -508,7 +527,10 @@ TTree* CreateTreeThresholdScan(TString treeName, TString treeTitle)
     newTree->Branch("actID", &actID, "actID/i");
     newTree->Branch("locID", &locID, "locID/I");
     newTree->Branch("condVB", &condVB, "condVB/b");
+    newTree->Branch("hicClass", &hicClass, "hicClass/B");
     newTree->Branch("chipNum", &chipNum, "chipNum/b");
+    newTree->Branch("waferNum", &waferNum, "waferNum/B");
+    newTree->Branch("waferPos", &waferPos, "waferPos/B");
     newTree->Branch("colNum", &colNum, "colNum/s");
     newTree->Branch("rowNum", &rowNum, "rowNum/s");
 //    newTree->Branch("thresh", &thresValue, "thresValue/F");
@@ -535,6 +557,7 @@ TTree* CreateTreeThresholdScanResult(TString treeName, TString treeTitle)
 //          a pointer to the created ROOT tree
 //
 // Created:      08 Jan 2019  Mario Sitta
+// Updated:      09 Jul 2019  Mario Sitta  HIC class added
 //
 
   TTree *newTree = 0;
@@ -546,6 +569,7 @@ TTree* CreateTreeThresholdScanResult(TString treeName, TString treeTitle)
     newTree->Branch("locID", &locID, "locID/I");
     newTree->Branch("startDate", &startDate, "startDate/l");
     newTree->Branch("condVB", &condVB, "condVB/b");
+    newTree->Branch("hicClass", &hicClass, "hicClass/B");
     newTree->Branch("vdddStart", &vdddStart, "vdddStart/F");
     newTree->Branch("vdddEnd", &vdddEnd, "vdddEnd/F");
     newTree->Branch("vddaStart", &vddaStart, "vddaStart/F");
@@ -592,7 +616,7 @@ TTree* CreateTreeThresholdScanResult(TString treeName, TString treeTitle)
   return newTree;
 }
 
-void ThresholdScanAllChips(TTree *ftree, ActivityDB::activityLong actlong, const int hicid, const int actid, const string eospath, const THicType hicType, bool allScans)
+void ThresholdScanAllChips(TTree *ftree, ActivityDB::activityLong actlong, const int hicid, const int actid, const string eospath, const THicType hicType, std::vector<TChild> children, bool allScans)
 {
 //
 // Loops on chips and fills the tree for the given activity
@@ -604,6 +628,7 @@ void ThresholdScanAllChips(TTree *ftree, ActivityDB::activityLong actlong, const
 //          actid   : the activity id
 //          eospath : the input file path on EOS
 //          hicType : the HIC type (IB or OB)
+//          children: vector of all HIC children
 //          allScans: if false analyze only post-tuning scans, if true do all
 //
 // Outputs:
@@ -612,6 +637,7 @@ void ThresholdScanAllChips(TTree *ftree, ActivityDB::activityLong actlong, const
 //
 // Created:      29 Jan 2019  Mario Sitta
 // Updated:      26 Feb 2019  Mario Sitta  HIC type added, bug fix in chip loop
+// Updated:      10 Jul 2019  Mario Sitta  Wafer number and chip position added
 //
 
   hicID = hicid;
@@ -634,6 +660,8 @@ void ThresholdScanAllChips(TTree *ftree, ActivityDB::activityLong actlong, const
       else
 	chipNum = ichip;
 
+      WaferNumAndPos(hicType, children, chipNum, waferNum, waferPos);
+
       Int_t code = (conds[icond]/10)*10; // We deliberately divide int's
       Int_t vBB = conds[icond] - code;
       bool nominal = (code == 100);
@@ -646,7 +674,7 @@ void ThresholdScanAllChips(TTree *ftree, ActivityDB::activityLong actlong, const
 
 }
 
-void ThresholdTuneAllChips(TTree *ftree, ActivityDB::activityLong actlong, const int hicid, const int actid, const string eospath, const THicType hicType)
+void ThresholdTuneAllChips(TTree *ftree, ActivityDB::activityLong actlong, const int hicid, const int actid, const string eospath, const THicType hicType, std::vector<TChild> children)
 {
 //
 // Loops on chips and fills the tree for the threshold tuning 
@@ -658,6 +686,7 @@ void ThresholdTuneAllChips(TTree *ftree, ActivityDB::activityLong actlong, const
 //          actid   : the activity id
 //          eospath : the input file path on EOS
 //          hicType : the HIC type (IB or OB)
+//          children: vector of all HIC children
 //
 // Outputs:
 //
@@ -665,6 +694,7 @@ void ThresholdTuneAllChips(TTree *ftree, ActivityDB::activityLong actlong, const
 //
 // Created:      31 Jan 2019  Mario Sitta
 // Updated:      26 Feb 2019  Mario Sitta  HIC type added, bug fix in chip loop
+// Updated:      10 Jul 2019  Mario Sitta  Wafer number and chip position added
 //
 
   hicID = hicid;
@@ -1281,21 +1311,26 @@ TTree* ReadThreScanTree(TString treename, TFile *rootfile)
 //          a pointer to the read ROOT tree
 //
 // Created:      29 Jan 2019  Mario Sitta
+// Updated:      05 Jul 2019  Mario Sitta  Chip Wafer and position added
+// Updated:      09 Jul 2019  Mario Sitta  HIC class added
 //
 
   TTree *newtree = 0;
   newtree = (TTree*)rootfile->Get(treename.Data());
 
   if(newtree) {
-    newtree->SetBranchAddress(  "hicID",  &hicID);
-    newtree->SetBranchAddress(  "actID",  &actID);
-    newtree->SetBranchAddress(  "locID",  &locID);
-    newtree->SetBranchAddress( "condVB", &condVB);
-    newtree->SetBranchAddress("chipNum",&chipNum);
-    newtree->SetBranchAddress( "colNum", &colNum);
-    newtree->SetBranchAddress( "rowNum", &rowNum);
-    newtree->SetBranchAddress( "thresh", &thresValue);
-    newtree->SetBranchAddress(  "noise", &noiseValue);
+    newtree->SetBranchAddress(   "hicID",  &hicID);
+    newtree->SetBranchAddress(   "actID",  &actID);
+    newtree->SetBranchAddress(   "locID",  &locID);
+    newtree->SetBranchAddress(  "condVB", &condVB);
+    newtree->SetBranchAddress("hicClass", &hicClass);
+    newtree->SetBranchAddress( "chipNum",&chipNum);
+    newtree->SetBranchAddress("waferNum",&waferNum);
+    newtree->SetBranchAddress("waferPos",&waferPos);
+    newtree->SetBranchAddress(  "colNum", &colNum);
+    newtree->SetBranchAddress(  "rowNum", &rowNum);
+    newtree->SetBranchAddress(  "thresh", &thresValue);
+    newtree->SetBranchAddress(   "noise", &noiseValue);
   }
 
   return newtree;
@@ -1318,6 +1353,7 @@ TTree* ReadThreScanTreeResult(TString treename, TFile *rootfile)
 //          a pointer to the read ROOT tree
 //
 // Created:      29 Nov 2019  Mario Sitta
+// Updated:      09 Jul 2019  Mario Sitta  HIC class added
 //
 
   TTree *newtree = 0;
@@ -1329,6 +1365,7 @@ TTree* ReadThreScanTreeResult(TString treename, TFile *rootfile)
     newtree->SetBranchAddress(            "locID", &locID);
     newtree->SetBranchAddress(        "startDate", &startDate);
     newtree->SetBranchAddress(           "condVB", &condVB);
+    newtree->SetBranchAddress(         "hicClass", &hicClass);
     newtree->SetBranchAddress(        "vdddStart", &vdddStart);
     newtree->SetBranchAddress(          "vdddEnd", &vdddEnd);
     newtree->SetBranchAddress(        "vddaStart", &vddaStart);
@@ -1388,8 +1425,13 @@ void ResetThreScanTreeVariables(void)
 //
 // Created:      09 Nov 2018  Mario Sitta
 // Updated:      22 Nov 2018  Mario Sitta
+// Updated:      05 Jul 2019  Mario Sitta  Chip Wafer and position added
+// Updated:      09 Jul 2019  Mario Sitta  HIC class added
 //
 
+  hicClass = 0;
+  waferNum = 0;
+  waferPos = 0;
   vdddStart = 0;
   vdddEnd = 0;
   vddaStart = 0;

@@ -9,6 +9,8 @@ static Bool_t redoFromStart;
 // Global tree variables
 static UChar_t  condVB; // Conditions of the test: Voltage percentage + Bias (0,3)
 static UChar_t  chipNum;
+static Char_t   waferNum;  // Wafer number of the chip (-1 if invalid)
+static Char_t   waferPos;  // Chip position in the wafer (-1 if invalid)
 static UChar_t  staveOLML;
 static UShort_t actMask;
 static UInt_t   hicID;
@@ -16,6 +18,7 @@ static UInt_t   actID;
 static ULong64_t startDate;
 static Int_t    locID;
 static Char_t   hicPosition; // HIC position in HS/Stave
+static Char_t   hicClass;
 static Float_t  vdddStart;
 static Float_t  vdddEnd;
 static Float_t  vddaStart;

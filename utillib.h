@@ -23,6 +23,7 @@
 #include "AlpideDBEndPoints.h"
 #include "THIC.h"
 #include "TScanFactory.h"
+#include "TScanAnalysis.h"
 
 #include <iostream>
 #include <stdio.h>
@@ -37,12 +38,16 @@
 
 Int_t AskUserRedoScan(void);
 Bool_t CheckRootFileExists(TString name);
+Int_t ChipPositionMAM2Test(const THicType hicType, const string position);
+string ChipPositionTest2MAM(const THicType hicType, const Int_t position);
 void CloseRootFile(TFile *rootfile);
+Char_t ConvertTestResult(const string result);
 string FindEOSPath(ActivityDB::activityLong actlong, const THicType hicType);
 void FixActName(ActivityDB::activityLong &actlong, const THicType hicType);
 TFile* OpenRootFile(TString name, Bool_t recreate=kFALSE);
 Bool_t RenameExistingRootFile(TString oldname, TString mod, TString &newname);
 TFile* SetupRootFile(TString name, Bool_t &redo);
+void WaferNumAndPos(const THicType hicType, std::vector<TChild> children, const Int_t chipNum, Char_t &waferNum, Char_t &waferPos);
 
 
 #endif // UTILLIB_H

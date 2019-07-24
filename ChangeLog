@@ -1,3 +1,7 @@
+* Wed Jul 24 2019 Mario.Sitta@to.infn.it - 1.2
+- Various updates and improvements in Threshold Scan
+  (including chip position and HIC qualification after tests)
+
 * Thu Jun 06 2019 Mario.Sitta@to.infn.it - 1.1
 - Get rid of activity timestamp from Root file names
   (EOS paths are fixed in a parallel update in DBHelpers::GetEosPath)
