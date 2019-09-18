@@ -464,9 +464,11 @@ void WaferNumAndPos(const THicType hicType, std::vector<TChild> children, const 
 // Return:
 //
 // Created:      05 Jul 2019  Mario Sitta
+// Updated:      18 Sep 2019  Mario Sitta  Bug fix: reading int instead of char
 //
 
   Int_t faund;
+  Int_t wn, wp;
 
   waferNum = -1;
   waferPos = -1;
@@ -477,7 +479,9 @@ void WaferNumAndPos(const THicType hicType, std::vector<TChild> children, const 
       TChild child = *ich;
 
       if (ChipPositionMAM2Test(hicType, child.Position) == chipNum) {
-        sscanf(child.Name.c_str(), "T%dW%02dR%02d", &faund, &waferNum, &waferPos);
+        sscanf(child.Name.c_str(), "T%dW%02dR%02d", &faund, &wn, &wp);
+        waferNum = wn;
+        waferPos = wp;
         break;
       }
     }

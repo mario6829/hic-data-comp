@@ -654,6 +654,7 @@ void ThresholdScanAllChips(TTree *ftree, ActivityDB::activityLong actlong, const
     const int numchips = ((hicType == HIC_OB) ? NUMCHIPS+1 : NUMCHIPSIB);
  
     for (int ichip = 0; ichip < numchips; ichip++) {
+      if(hicType == HIC_IB) chipNum = ichip;
       if(hicType == HIC_OB && ichip == 7) continue;
       if(hicType == HIC_OB && ichip > 7)
 	chipNum = ichip - 1;
