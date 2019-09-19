@@ -3,6 +3,7 @@
 
 #define NUMCHIPS 14
 #define NUMCHIPSIB 9
+#define HICNAMELEN 13
 
 static Bool_t redoFromStart;
 
@@ -12,6 +13,7 @@ static UChar_t  chipNum;
 static Char_t   waferNum;  // Wafer number of the chip (-1 if invalid)
 static Char_t   waferPos;  // Chip position in the wafer (-1 if invalid)
 static UChar_t  staveOLML;
+static Char_t   hicName[HICNAMELEN];
 static UShort_t actMask;
 static UInt_t   hicID;
 static UInt_t   actID;

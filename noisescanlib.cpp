@@ -31,6 +31,7 @@ void analyzeAllNoiseScans(std::vector<ComponentDB::componentShort> componentList
 //
 // Created:      05 Feb 2019  Mario Sitta
 // Updated:      26 Feb 2019  Mario Sitta  HIC type added
+// Updated:      17 Sep 2019  Mario Sitta  HIC name added
 //
 
   // We need to define here the TTree's for the existing ROOT file
@@ -190,6 +191,8 @@ void analyzeAllNoiseScans(std::vector<ComponentDB::componentShort> componentList
       testOffset = testree->GetEntries();
       testResOffset = resultree->GetEntries();
 
+      strncpy(hicName, comp.ComponentID.c_str(), HICNAMELEN-1);
+
       NoiseScanAllChips(testree, actLong, comp.ID, act.ID, eosPath);
       NoiseScanResults(resultree, actLong, comp.ID, act.ID, eosPath, hicType);
 
@@ -256,6 +259,7 @@ void analyzeNoiseScan(const int hicid, const ComponentDB::compActivity act, Alpi
 // Created:      01 Feb 2019  Mario Sitta
 // Updated:      26 Feb 2019  Mario Sitta  HIC type added
 // Updated:      06 Jun 2019  Mario Sitta  Get rid of timestamp from act name
+// Updated:      17 Sep 2019  Mario Sitta  HIC name added
 //
 
   // Should never happen (the caller should have created it for us)
@@ -314,6 +318,15 @@ void analyzeNoiseScan(const int hicid, const ComponentDB::compActivity act, Alpi
     f12ToExit();
     return;
   }
+
+  // Get the name of the HIC
+  int componentTypeId;
+  if (hicType == HIC_IB)
+    componentTypeId = DbGetComponentTypeId (db, "Inner Barrel HIC Module");
+  else
+    componentTypeId = DbGetComponentTypeId (db, "Outer Barrel HIC Module");
+  string hicNameStr = DbGetComponentName(db, componentTypeId, hicid);
+  strncpy(hicName, hicNameStr.c_str(), HICNAMELEN-1);
 
   // Fill the trees for all chips
   NoiseScanAllChips(noisescanTree, actLong, hicid, act.ID, eosPath);
@@ -436,12 +449,14 @@ TTree* CreateTreeNoiseScan(TString treeName, TString treeTitle)
 //          a pointer to the created ROOT tree
 //
 // Created:      01 Feb 2019  Mario Sitta
+// Updated:      17 Sep 2019  Mario Sitta  HIC name added
 //
 
   TTree *newTree = 0;
   newTree = new TTree(treeName.Data(), treeTitle.Data());
 
   if(newTree) {
+    newTree->Branch("hicName", hicName, "hicName[13]/B");
     newTree->Branch("hicID", &hicID, "hicID/i");
     newTree->Branch("actID", &actID, "actID/i");
     newTree->Branch("locID", &locID, "locID/I");
@@ -470,12 +485,14 @@ TTree* CreateTreeNoiseScanResult(TString treeName, TString treeTitle)
 //          a pointer to the created ROOT tree
 //
 // Created:      08 Jan 2019  Mario Sitta
+// Updated:      17 Sep 2019  Mario Sitta  HIC name added
 //
 
   TTree *newTree = 0;
   newTree = new TTree(treeName.Data(), treeTitle.Data());
 
   if(newTree) {
+    newTree->Branch("hicName", hicName, "hicName[13]/B");
     newTree->Branch("hicID", &hicID, "hicID/i");
     newTree->Branch("actID", &actID, "actID/i");
     newTree->Branch("locID", &locID, "locID/I");
@@ -1094,12 +1111,14 @@ TTree* ReadNoiseScanTree(TString treename, TFile *rootfile)
 //          a pointer to the read ROOT tree
 //
 // Created:      05 Feb 2019  Mario Sitta
+// Updated:      17 Sep 2019  Mario Sitta  HIC name added
 //
 
   TTree *newtree = 0;
   newtree = (TTree*)rootfile->Get(treename.Data());
 
   if(newtree) {
+    newtree->SetBranchAddress( "hicName", hicName);
     newtree->SetBranchAddress(  "hicID",  &hicID);
     newtree->SetBranchAddress(  "actID",  &actID);
     newtree->SetBranchAddress(  "locID",  &locID);
@@ -1130,12 +1149,14 @@ TTree* ReadNoiseScanTreeResult(TString treename, TFile *rootfile)
 //          a pointer to the read ROOT tree
 //
 // Created:      29 Nov 2019  Mario Sitta
+// Updated:      17 Sep 2019  Mario Sitta  HIC name added
 //
 
   TTree *newtree = 0;
   newtree = (TTree*)rootfile->Get(treename.Data());
 
   if(newtree) {
+    newtree->SetBranchAddress(          "hicName", hicName);
     newtree->SetBranchAddress(            "hicID", &hicID);
     newtree->SetBranchAddress(            "actID", &actID);
     newtree->SetBranchAddress(            "locID", &locID);

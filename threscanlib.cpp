@@ -45,6 +45,7 @@ void analyzeAllThresholdScans(std::vector<ComponentDB::componentShort> component
 // Updated:      31 Jan 2019  Mario Sitta
 // Updated:      26 Feb 2019  Mario Sitta  HIC type added
 // Updated:      05 Jul 2019  Mario Sitta  Chip Wafer and position added
+// Updated:      16 Sep 2019  Mario Sitta  HIC name added
 //
 
   // We need to define here the TTree's for the existing ROOT file
@@ -231,6 +232,7 @@ void analyzeAllThresholdScans(std::vector<ComponentDB::componentShort> component
       testTunOffset = testuntree->GetEntries();
       testResOffset = resultree->GetEntries();
 
+      strncpy(hicName, comp.ComponentID.c_str(), HICNAMELEN-1);
       hicClass = ConvertTestResult(act.Result.Name);
 
       ThresholdScanAllChips(testree, actLong, comp.ID, act.ID, eosPath, hicType, children, false);
@@ -303,6 +305,7 @@ void analyzeThresholdScan(const int hicid, const ComponentDB::compActivity act, 
 // Updated:      26 Feb 2019  Mario Sitta  HIC type added
 // Updated:      06 Jun 2019  Mario Sitta  Get rid of timestamp from act name
 // Updated:      05 Jul 2019  Mario Sitta  Chip Wafer and position added
+// Updated:      16 Sep 2019  Mario Sitta  HIC name added
 //
 
   // Should never happen (the caller should have created it for us)
@@ -374,6 +377,15 @@ void analyzeThresholdScan(const int hicid, const ComponentDB::compActivity act, 
   int nChildren = DbGetListOfChildren(db, hicid, children, true);
   if (nChildren == 0)
     printMessage("\nanalyzeThresholdScan","Warning: HIC has no children");
+
+  // Get the name of the HIC
+  int componentTypeId;
+  if (hicType == HIC_IB)
+    componentTypeId = DbGetComponentTypeId (db, "Inner Barrel HIC Module");
+  else
+    componentTypeId = DbGetComponentTypeId (db, "Outer Barrel HIC Module");
+  string hicNameStr = DbGetComponentName(db, componentTypeId, hicid);
+  strncpy(hicName, hicNameStr.c_str(), HICNAMELEN-1);
 
   // Fill the trees for all chips (all scans)
   hicClass = ConvertTestResult(act.Result.Name);
@@ -517,12 +529,14 @@ TTree* CreateTreeThresholdScan(TString treeName, TString treeTitle)
 // Created:      08 Jan 2019  Mario Sitta
 // Updated:      05 Jul 2019  Mario Sitta  Chip Wafer and position added
 // Updated:      09 Jul 2019  Mario Sitta  HIC class added
+// Updated:      16 Sep 2019  Mario Sitta  HIC name added
 //
 
   TTree *newTree = 0;
   newTree = new TTree(treeName.Data(), treeTitle.Data());
 
   if(newTree) {
+    newTree->Branch("hicName", hicName, "hicName[13]/B");
     newTree->Branch("hicID", &hicID, "hicID/i");
     newTree->Branch("actID", &actID, "actID/i");
     newTree->Branch("locID", &locID, "locID/I");
@@ -558,12 +572,14 @@ TTree* CreateTreeThresholdScanResult(TString treeName, TString treeTitle)
 //
 // Created:      08 Jan 2019  Mario Sitta
 // Updated:      09 Jul 2019  Mario Sitta  HIC class added
+// Updated:      16 Sep 2019  Mario Sitta  HIC name added
 //
 
   TTree *newTree = 0;
   newTree = new TTree(treeName.Data(), treeTitle.Data());
 
   if(newTree) {
+    newTree->Branch("hicName", hicName, "hicName[13]/B");
     newTree->Branch("hicID", &hicID, "hicID/i");
     newTree->Branch("actID", &actID, "actID/i");
     newTree->Branch("locID", &locID, "locID/I");
@@ -652,7 +668,7 @@ void ThresholdScanAllChips(TTree *ftree, ActivityDB::activityLong actlong, const
     if(conds[icond] < 200 && !allScans) continue;
 
     const int numchips = ((hicType == HIC_OB) ? NUMCHIPS+1 : NUMCHIPSIB);
- 
+
     for (int ichip = 0; ichip < numchips; ichip++) {
       if(hicType == HIC_IB) chipNum = ichip;
       if(hicType == HIC_OB && ichip == 7) continue;
@@ -1314,20 +1330,22 @@ TTree* ReadThreScanTree(TString treename, TFile *rootfile)
 // Created:      29 Jan 2019  Mario Sitta
 // Updated:      05 Jul 2019  Mario Sitta  Chip Wafer and position added
 // Updated:      09 Jul 2019  Mario Sitta  HIC class added
+// Updated:      16 Sep 2019  Mario Sitta  HIC name added
 //
 
   TTree *newtree = 0;
   newtree = (TTree*)rootfile->Get(treename.Data());
 
   if(newtree) {
+    newtree->SetBranchAddress( "hicName", hicName);
     newtree->SetBranchAddress(   "hicID",  &hicID);
     newtree->SetBranchAddress(   "actID",  &actID);
     newtree->SetBranchAddress(   "locID",  &locID);
     newtree->SetBranchAddress(  "condVB", &condVB);
     newtree->SetBranchAddress("hicClass", &hicClass);
-    newtree->SetBranchAddress( "chipNum",&chipNum);
-    newtree->SetBranchAddress("waferNum",&waferNum);
-    newtree->SetBranchAddress("waferPos",&waferPos);
+    newtree->SetBranchAddress( "chipNum", &chipNum);
+    newtree->SetBranchAddress("waferNum", &waferNum);
+    newtree->SetBranchAddress("waferPos", &waferPos);
     newtree->SetBranchAddress(  "colNum", &colNum);
     newtree->SetBranchAddress(  "rowNum", &rowNum);
     newtree->SetBranchAddress(  "thresh", &thresValue);
@@ -1355,12 +1373,14 @@ TTree* ReadThreScanTreeResult(TString treename, TFile *rootfile)
 //
 // Created:      29 Nov 2019  Mario Sitta
 // Updated:      09 Jul 2019  Mario Sitta  HIC class added
+// Updated:      16 Sep 2019  Mario Sitta  HIC name added
 //
 
   TTree *newtree = 0;
   newtree = (TTree*)rootfile->Get(treename.Data());
 
   if(newtree) {
+    newtree->SetBranchAddress(          "hicName", hicName);
     newtree->SetBranchAddress(            "hicID", &hicID);
     newtree->SetBranchAddress(            "actID", &actID);
     newtree->SetBranchAddress(            "locID", &locID);
