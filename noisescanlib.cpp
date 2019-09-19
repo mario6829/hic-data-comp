@@ -654,7 +654,7 @@ Bool_t FillNoiseScanTree(TTree *tree, string path, string filepix, string filehi
 
   FILE*  infile;
   string fullName;
-  Int_t  row, column, ichip, nhits;
+  Int_t  ichip, region, doublecol, addr;
 
   fullName = path + "/" + filepix;
   infile = fopen(fullName.c_str(),"r");
@@ -663,7 +663,6 @@ Bool_t FillNoiseScanTree(TTree *tree, string path, string filepix, string filehi
     return kFALSE;
   }
 
-  Int_t region, doublecol, addr;
   while(fscanf(infile, "%d %d %d %d", &ichip, &region, &doublecol, &addr) != EOF){
     chipNum = ichip;
     regioNum = region;
@@ -1122,9 +1121,9 @@ TTree* ReadNoiseScanTree(TString treename, TFile *rootfile)
     newtree->SetBranchAddress(  "locID",  &locID);
     newtree->SetBranchAddress( "condVB", &condVB);
     newtree->SetBranchAddress("chipNum",&chipNum);
-    newtree->SetBranchAddress( "colNum", &colNum);
-    newtree->SetBranchAddress( "rowNum", &rowNum);
-    newtree->SetBranchAddress("numHits",&numHits);
+    newtree->SetBranchAddress("region", &regioNum);
+    newtree->SetBranchAddress("doubcol", &doubNum);
+    newtree->SetBranchAddress("address", &address);
   }
 
   return newtree;
