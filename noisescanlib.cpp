@@ -6,7 +6,7 @@
 // Local tree variables
 static UShort_t colNum;
 static UShort_t rowNum;
-static UShort_t numHits;
+static UInt_t   numHits;
 UInt_t   noisePixTotal;
 Double_t noiseOccTotal;
 UInt_t   noisePixels[NUMCHIPS];
@@ -450,6 +450,7 @@ TTree* CreateTreeNoiseScan(TString treeName, TString treeTitle)
 //
 // Created:      01 Feb 2019  Mario Sitta
 // Updated:      17 Sep 2019  Mario Sitta  HIC name added
+// Updated:      19 Sep 2019  Mario Sitta  numHits changed to UInt
 //
 
   TTree *newTree = 0;
@@ -464,7 +465,7 @@ TTree* CreateTreeNoiseScan(TString treeName, TString treeTitle)
     newTree->Branch("chipNum", &chipNum, "chipNum/b");
     newTree->Branch("colNum", &colNum, "colNum/s");
     newTree->Branch("rowNum", &rowNum, "rowNum/s");
-    newTree->Branch("numHits", &numHits, "numHits/s");
+    newTree->Branch("numHits", &numHits, "numHits/i");
   }
 
   return newTree;
