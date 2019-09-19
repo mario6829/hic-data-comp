@@ -4,9 +4,9 @@
 #include "treevariables.h"
 
 // Local tree variables
-static UShort_t colNum;
-static UShort_t rowNum;
-static UInt_t   numHits;
+static UShort_t regioNum;
+static UShort_t doubNum;
+static UShort_t address;
 UInt_t   noisePixTotal;
 Double_t noiseOccTotal;
 UInt_t   noisePixels[NUMCHIPS];
@@ -451,6 +451,7 @@ TTree* CreateTreeNoiseScan(TString treeName, TString treeTitle)
 // Created:      01 Feb 2019  Mario Sitta
 // Updated:      17 Sep 2019  Mario Sitta  HIC name added
 // Updated:      19 Sep 2019  Mario Sitta  numHits changed to UInt
+// Updated:      19 Sep 2019  Mario Sitta  Bug fix in reading NoisyPixels file
 //
 
   TTree *newTree = 0;
@@ -463,9 +464,9 @@ TTree* CreateTreeNoiseScan(TString treeName, TString treeTitle)
     newTree->Branch("locID", &locID, "locID/I");
     newTree->Branch("condVB", &condVB, "condVB/b");
     newTree->Branch("chipNum", &chipNum, "chipNum/b");
-    newTree->Branch("colNum", &colNum, "colNum/s");
-    newTree->Branch("rowNum", &rowNum, "rowNum/s");
-    newTree->Branch("numHits", &numHits, "numHits/i");
+    newTree->Branch("region", &regioNum, "regioNum/s");
+    newTree->Branch("doubcol", &doubNum, "doubNum/s");
+    newTree->Branch("address", &address, "address/s");
   }
 
   return newTree;
@@ -648,30 +649,26 @@ Bool_t FillNoiseScanTree(TTree *tree, string path, string filepix, string filehi
 //          true if the input file was read without error, otherwise false
 //
 // Created:      04 Feb 2019  Mario Sitta  Modelled on Digital Scan routine
+// Updated:      19 Sep 2019  Mario Sitta  Bug fix in reading NoisyPixels file
 //
 
   FILE*  infile;
   string fullName;
   Int_t  row, column, ichip, nhits;
 
-  // First try to open NoiseHits, if fails try with NoisyPixels
-  fullName = path + "/" + filehits;
-
+  fullName = path + "/" + filepix;
   infile = fopen(fullName.c_str(),"r");
   if (!infile) {
-    fullName = path + "/" + filepix;
-    infile = fopen(fullName.c_str(),"r");
-    if (!infile) {
-      printMessage("FillNoiseScanTree","Warning: cannot open input file",filepix.c_str());
-      return kFALSE;
-    }
+    printMessage("FillNoiseScanTree","Warning: cannot open input file",filepix.c_str());
+    return kFALSE;
   }
 
-  while(fscanf(infile, "%d %d %d %d", &ichip, &column, &row, &nhits) != EOF){
+  Int_t region, doublecol, addr;
+  while(fscanf(infile, "%d %d %d %d", &ichip, &region, &doublecol, &addr) != EOF){
     chipNum = ichip;
-    rowNum = row;
-    colNum = column;
-    numHits = nhits;
+    regioNum = region;
+    doubNum = doublecol;
+    address = addr;
     tree->Fill();
   }
   fclose(infile);
