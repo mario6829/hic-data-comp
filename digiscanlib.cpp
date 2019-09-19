@@ -38,6 +38,7 @@ void analyzeAllDigitalScans(std::vector<ComponentDB::componentShort> componentLi
 // Updated:      11 Mar 2019  Mario Sitta  HIC position added
 //                                         Flag ML/OL staves
 //                                         Stave Reception Test added
+// Updated:      19 Sep 2019  Mario Sitta  HIC name and classification added
 //
 
   // We need to define here the TTree's for the existing ROOT file
@@ -220,7 +221,9 @@ void analyzeAllDigitalScans(std::vector<ComponentDB::componentShort> componentLi
       testOffset = testree->GetEntries();
       testResOffset = resultree->GetEntries();
 
+      strncpy(hicName, comp.ComponentID.c_str(), HICNAMELEN-1);
       hicPosition = DbGetPosition(db, comp.ID);
+      hicClass = ConvertTestResult(act.Result.Name);
 
       DigitalScanAllChips(testree, actLong, comp.ID, act.ID, eosPath, hicType);
       DigitalScanResults(resultree, actLong, comp.ID, act.ID, eosPath, hicType);
@@ -292,6 +295,7 @@ void analyzeDigitalScan(const int hicid, const ComponentDB::compActivity act, Al
 // Updated:      26 Feb 2019  Mario Sitta  HIC type added
 // Updated:      08 Mar 2019  Mario Sitta  HIC position & Flag ML/OL staves
 // Updated:      06 Jun 2019  Mario Sitta  Get rid of timestamp from act name
+// Updated:      19 Sep 2019  Mario Sitta  HIC name and classification added
 //
 
   // Should never happen (the caller should have created it for us)
@@ -351,6 +355,15 @@ void analyzeDigitalScan(const int hicid, const ComponentDB::compActivity act, Al
     return;
   }
 
+  // Get the name of the HIC
+  int componentTypeId;
+  if (hicType == HIC_IB)
+    componentTypeId = DbGetComponentTypeId (db, "Inner Barrel HIC Module");
+  else
+    componentTypeId = DbGetComponentTypeId (db, "Outer Barrel HIC Module");
+  string hicNameStr = DbGetComponentName(db, componentTypeId, hicid);
+  strncpy(hicName, hicNameStr.c_str(), HICNAMELEN-1);
+
   // Fill the trees for all chips
   staveOLML = 0;
   if(actLong.Type.Name.find("HS") != string::npos &&
@@ -371,6 +384,7 @@ void analyzeDigitalScan(const int hicid, const ComponentDB::compActivity act, Al
   }
 
   hicPosition = DbGetPosition(db, hicid);
+  hicClass = ConvertTestResult(act.Result.Name);
   DigitalScanAllChips(digiscanTree, actLong, hicid, act.ID, eosPath, hicType);
   DigitalScanResults(digiresulTree, actLong, hicid, act.ID, eosPath, hicType);
 
@@ -494,17 +508,20 @@ TTree* CreateTreeDigitalScan(TString treeName, TString treeTitle)
 // Updated:      08 Oct 2018  Mario Sitta
 // Updated:      15 Jan 2019  Mario Sitta
 // Updated:      08 Mar 2019  Mario Sitta  HIC position & Flag ML/OL staves
+// Updated:      19 Sep 2019  Mario Sitta  HIC name and classification added
 //
 
   TTree *newTree = 0;
   newTree = new TTree(treeName.Data(), treeTitle.Data());
 
   if(newTree) {
+    newTree->Branch("hicName", hicName, "hicName[13]/B");
     newTree->Branch("hicID", &hicID, "hicID/i");
     newTree->Branch("actID", &actID, "actID/i");
     newTree->Branch("locID", &locID, "locID/I");
     newTree->Branch("condVB", &condVB, "condVB/b");
     newTree->Branch("hicPos", &hicPosition, "hicPosition/B");
+    newTree->Branch("hicClass", &hicClass, "hicClass/B");
     newTree->Branch("staveOLML", &staveOLML, "staveOLML/b");
     newTree->Branch("chipNum", &chipNum, "chipNum/b");
     newTree->Branch("colNum", &colNum, "colNum/s");
@@ -533,18 +550,21 @@ TTree* CreateTreeDigitalScanResult(TString treeName, TString treeTitle)
 // Updated:      06 Nov 2018  Mario Sitta
 // Updated:      23 Jan 2019  Mario Sitta
 // Updated:      08 Mar 2019  Mario Sitta  HIC position & Flag ML/OL staves
+// Updated:      19 Sep 2019  Mario Sitta  HIC name and classification added
 //
 
   TTree *newTree = 0;
   newTree = new TTree(treeName.Data(), treeTitle.Data());
 
   if(newTree) {
+    newTree->Branch("hicName", hicName, "hicName[13]/B");
     newTree->Branch("hicID", &hicID, "hicID/i");
     newTree->Branch("actID", &actID, "actID/i");
     newTree->Branch("locID", &locID, "locID/I");
     newTree->Branch("startDate", &startDate, "startDate/l");
     newTree->Branch("condVB", &condVB, "condVB/b");
     newTree->Branch("hicPos", &hicPosition, "hicPosition/B");
+    newTree->Branch("hicClass", &hicClass, "hicClass/B");
     newTree->Branch("staveOLML", &staveOLML, "staveOLML/b");
     newTree->Branch("vdddStart", &vdddStart, "vdddStart/F");
     newTree->Branch("vdddEnd", &vdddEnd, "vdddEnd/F");
@@ -1208,17 +1228,20 @@ TTree* ReadDigScanTree(TString treename, TFile *rootfile)
 // Created:      28 Nov 2018  Mario Sitta
 // Updated:      15 Jan 2019  Mario Sitta
 // Updated:      08 Mar 2019  Mario Sitta  HIC position & Flag ML/OL staves
+// Updated:      19 Sep 2019  Mario Sitta  HIC name and classification added
 //
 
   TTree *newtree = 0;
   newtree = (TTree*)rootfile->Get(treename.Data());
 
   if(newtree) {
+    newtree->SetBranchAddress( "hicName", hicName);
     newtree->SetBranchAddress(  "hicID",  &hicID);
     newtree->SetBranchAddress(  "actID",  &actID);
     newtree->SetBranchAddress(  "locID",  &locID);
     newtree->SetBranchAddress( "condVB", &condVB);
     newtree->SetBranchAddress( "hicPos", &hicPosition);
+    newtree->SetBranchAddress("hicClass", &hicClass);
     newtree->SetBranchAddress("staveOLML", &staveOLML);
     newtree->SetBranchAddress("chipNum",&chipNum);
     newtree->SetBranchAddress( "colNum", &colNum);
@@ -1248,18 +1271,21 @@ TTree* ReadDigScanTreeResult(TString treename, TFile *rootfile)
 // Created:      28 Nov 2018  Mario Sitta
 // Updated:      23 Jan 2019  Mario Sitta
 // Updated:      08 Mar 2019  Mario Sitta  HIC position & Flag ML/OL staves
+// Updated:      19 Sep 2019  Mario Sitta  HIC name and classification added
 //
 
   TTree *newtree = 0;
   newtree = (TTree*)rootfile->Get(treename.Data());
 
   if(newtree) {
+    newtree->SetBranchAddress(          "hicName", hicName);
     newtree->SetBranchAddress(            "hicID", &hicID);
     newtree->SetBranchAddress(            "actID", &actID);
     newtree->SetBranchAddress(            "locID", &locID);
     newtree->SetBranchAddress(        "startDate", &startDate);
     newtree->SetBranchAddress(           "condVB", &condVB);
     newtree->SetBranchAddress(           "hicPos", &hicPosition);
+    newtree->SetBranchAddress(         "hicClass", &hicClass);
     newtree->SetBranchAddress(        "staveOLML", &staveOLML);
     newtree->SetBranchAddress(        "vdddStart", &vdddStart);
     newtree->SetBranchAddress(          "vdddEnd", &vdddEnd);
@@ -1313,8 +1339,10 @@ void ResetDigScanTreeVariables(void)
 //
 // Created:      09 Nov 2018  Mario Sitta
 // Updated:      22 Nov 2018  Mario Sitta
+// Updated:      19 Sep 2019  Mario Sitta  HIC class added
 //
 
+  hicClass = 0;
   vdddStart = 0;
   vdddEnd = 0;
   vddaStart = 0;
